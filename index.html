@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>금은미 — 얼마나 이득인지 확인하세요</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;background:#f7f6f3;color:#1a1a1a;-webkit-font-smoothing:antialiased}
+
+.bar{background:#1c1510;padding:10px 16px;text-align:center}
+.bar .ev{font-size:.72em;color:#d4af37;font-weight:700;letter-spacing:.3px;margin-bottom:4px}
+.bar .prices{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}
+.bar .prices .p{text-align:center}
+.bar .prices .p .l{font-size:.52em;color:rgba(255,255,255,.35);font-weight:600;letter-spacing:.8px}
+.bar .prices .p .v{font-size:.85em;font-weight:800;color:rgba(255,255,255,.8);margin-top:1px}
+.bar .prices .p .v.gc{color:#d4af37}
+.bar .loading{font-size:.6em;color:rgba(255,255,255,.3);margin-top:4px}
+
+.wrap{max-width:440px;margin:0 auto;padding:16px 14px 32px}
+
+.input-box{background:#fff;border-radius:14px;padding:18px;text-align:center;box-shadow:0 1px 8px rgba(0,0,0,.04);margin-bottom:14px}
+.input-box .title{font-size:.85em;font-weight:700;margin-bottom:10px}
+.input-row{display:inline-flex;align-items:center;gap:6px}
+.input-row input{width:110px;font-size:2.2em;font-weight:900;text-align:center;border:2px solid #e0dbd3;border-radius:10px;padding:6px;background:#faf9f6;color:#1a1a1a;font-family:'Noto Sans KR',sans-serif;outline:none}
+.input-row input:focus{border-color:#d4af37}
+.input-row span{font-size:1.1em;font-weight:700;color:#999}
+
+.steps{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 8px rgba(0,0,0,.04)}
+.step{padding:16px 20px;border-bottom:1px solid #f2efe9;display:flex;justify-content:space-between;align-items:center}
+.step:last-child{border:none}
+.step .left{flex:1}
+.step .num{font-size:.6em;font-weight:900;color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-right:6px;vertical-align:middle}
+.step .num.n1{background:#8b6914}
+.step .num.n2{background:#1a1a1a}
+.step .num.n3{background:#0a5e8a}
+.step .label{font-size:.88em;font-weight:600;display:inline}
+.step .desc{font-size:.68em;color:#999;margin-top:2px}
+.step .right{text-align:right}
+.step .price{font-size:1.35em;font-weight:900}
+.step .price.gold{color:#8b6914}
+.step .price.dark{color:#1a1a1a}
+.step .price.blue{color:#0a5e8a}
+
+.benefit{margin:14px 0;border-radius:14px;overflow:hidden}
+.ben-row{padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
+.ben-gold{background:linear-gradient(135deg,#fef8e8,#fdf0c8);border-bottom:1px solid #e8d48b}
+.ben-save{background:linear-gradient(135deg,#e8f7ee,#d1f5de);border-bottom:1px solid #a7e8b8}
+.ben-pb{background:linear-gradient(135deg,#eef6ff,#dbeeff)}
+.ben-row .left .title2{font-size:.82em;font-weight:700}
+.ben-row .left .sub2{font-size:.62em;color:#888;margin-top:1px}
+.ben-row .right .amt{font-size:1.4em;font-weight:900}
+.ben-row .right .amt.gd{color:#8b6914}
+.ben-row .right .amt.gn{color:#0d9448}
+.ben-row .right .amt.bl{color:#0a5e8a}
+
+.compare-box{background:#fff;border-radius:14px;padding:16px 20px;box-shadow:0 1px 8px rgba(0,0,0,.04);margin-top:14px}
+.compare-box .ch{font-size:.72em;font-weight:700;color:#999;margin-bottom:8px}
+.compare-box .crow{display:flex;justify-content:space-between;padding:5px 0;font-size:.82em}
+.compare-box .crow .k{color:#888}
+.compare-box .crow .v{font-weight:600}
+.compare-box .crow .v.pk{color:#b91c63}
+.compare-box .highlight{margin-top:8px;padding:10px;background:#e8f4fc;border-radius:8px;font-size:.78em;color:#0a5e8a;line-height:1.5;text-align:center}
+.compare-box .highlight b{color:#064e73}
+
+.foot{font-size:.55em;color:#bbb;text-align:center;padding:16px;line-height:1.6}
+
+@media(max-width:440px){.step .price{font-size:1.15em}.ben-row .right .amt{font-size:1.15em}}
+</style>
+</head>
+<body>
+
+<div class="bar">
+<div class="ev">매달 마지막주 한정 · 금은미 이벤트</div>
+<div class="prices">
+<div class="p"><div class="l">24K 1돈</div><div class="v gc" id="t1">불러오는 중...</div></div>
+<div class="p"><div class="l">14K 1g</div><div class="v" id="t2">-</div></div>
+<div class="p"><div class="l">기준</div><div class="v" id="t3">-</div></div>
+</div>
+<div class="loading" id="apiStatus">금시세 자동 조회 중...</div>
+</div>
+
+<div class="wrap">
+<div class="input-box">
+<div class="title">제품 무게를 입력하세요 (14K)</div>
+<div class="input-row">
+<input type="number" id="gIn" value="1.07" min="0.1" max="30" step="0.01">
+<span>g</span>
+</div>
+</div>
+
+<div class="steps" id="steps"></div>
+<div class="benefit" id="benefit"></div>
+<div class="compare-box" id="compare"></div>
+
+<div class="foot">
+모든 가격 부가세(VAT) 포함<br>
+14K 시세 = 24K 국제시세 기준 × 순도 0.585 × 해리 1.1 × 환율 반영<br>
+페이백 10% 자동적용 · 포인트는 소잇 내 사용 가능
+</div>
+</div>
+
+<script>
+const H=0.585*1.1, ALP=0.8493, LAB=20876, MP=1.9, PBR=0.10;
+let don=1040000; // 기본값 (API 실패시 폴백)
+let priceDate='';
+const fmt=n=>Math.round(n).toLocaleString('ko-KR');
+
+// URL 파라미터
+const params=new URLSearchParams(location.search);
+if(params.get('g')) document.getElementById('gIn').value=params.get('g');
+if(params.get('don')) don=parseInt(params.get('don'));
+
+// 금시세 API 조회 — 다중 소스 시도
+async function fetchGoldPrice(){
+  // 소스 1: 공공데이터 KRX 금 시세 (한국거래소)
+  // 소스 2: 국제 금시세 + 환율 계산
+  // 소스 3: 폴백 (수동 설정값)
+
+  try {
+    // 방법: 국제 금시세(USD/oz) → 원화 환산 → 1돈 가격
+    // GoldAPI.io 무료 (월100회) 또는 metals-api 사용
+    // 여기서는 CORS 지원되는 무료 소스 사용
+
+    // 1차 시도: freegoldapi.com (무료, CORS 지원, API키 불필요)
+    const res = await fetch('https://freegoldapi.com/data/latest.json');
+    if(res.ok){
+      const data = await res.json();
+      // 가장 최근 데이터 (배열 마지막)
+      const latest = data[data.length-1];
+      const goldUsdOz = latest.price; // USD per troy ounce
+
+      // 환율 조회
+      const fxRes = await fetch('https://open.er-api.com/v6/latest/USD');
+      if(fxRes.ok){
+        const fxData = await fxRes.json();
+        const usdKrw = fxData.rates.KRW;
+
+        // 24K 1돈 = (USD/oz) × 환율 × (3.75/31.1035) × 1.1(VAT+프리미엄)
+        // 한국 소매 살때 기준은 국제시세 대비 약 10-15% 프리미엄
+        const goldKrwG = (goldUsdOz / 31.1035) * usdKrw; // 24K 원/g (세전)
+        const goldKrwDon = goldKrwG * 3.75; // 24K 1돈 세전
+        // 한국 소매 살때 = 세전 + VAT(10%) + 마진(~3-5%)
+        don = Math.round(goldKrwDon * 1.13); // 약 13% 프리미엄 (VAT+유통)
+
+        priceDate = latest.date;
+        document.getElementById('apiStatus').textContent =
+          '국제시세 $'+goldUsdOz.toFixed(0)+'/oz × '+usdKrw.toFixed(0)+'원 기준';
+        calc();
+        return;
+      }
+    }
+  } catch(e) {
+    console.log('API 1차 실패:', e);
+  }
+
+  // 폴백: URL 파라미터 또는 기본값 사용
+  document.getElementById('apiStatus').textContent =
+    '자동 시세 조회 실패 · ?don=금액 으로 수동 설정 가능';
+  calc();
+}
+
+function calc(){
+  var w=parseFloat(document.getElementById('gIn').value)||1.0;
+  var g24=don/3.75, g14=g24*H;
+  var d=new Date();
+
+  document.getElementById('t1').textContent=fmt(don)+'원';
+  document.getElementById('t2').textContent=fmt(g14)+'원';
+  document.getElementById('t3').textContent= priceDate ||
+    (d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0'));
+
+  var goldVal=g14*w;
+  var jewelVal=goldVal+LAB;
+  var supply=(g14*w+LAB)*ALP;
+  var sp=supply*MP;
+  var cash=sp*0.5;
+  var pt=sp*0.5;
+  var pb=sp*PBR;
+  var diffGold=goldVal-cash;
+  var shopPrice=jewelVal*2;
+  var diffShop=shopPrice-cash;
+
+  document.getElementById('steps').innerHTML=
+    '<div class="step">'+
+      '<div class="left"><span class="num n1">1</span><div class="label">소잇 판매가</div><div class="desc">금은미 이벤트가</div></div>'+
+      '<div class="right"><div class="price dark">'+fmt(sp)+'원</div></div>'+
+    '</div>'+
+    '<div class="step">'+
+      '<div class="left"><span class="num n2">2</span><div class="label">14K '+w+'g 금 소매가</div><div class="desc">한국금거래소 기준 순수 금값</div></div>'+
+      '<div class="right"><div class="price gold">'+fmt(goldVal)+'원</div></div>'+
+    '</div>'+
+    '<div class="step" style="background:#f0fdf4">'+
+      '<div class="left"><span class="num n3">3</span><div class="label">포인트 50% 적용 후 현금</div><div class="desc">내가 실제로 내는 돈</div></div>'+
+      '<div class="right"><div class="price blue">'+fmt(cash)+'원</div></div>'+
+    '</div>';
+
+  var goldLabel=diffGold>0?'금값보다 저렴':'금값과의 차이';
+  var goldSign=diffGold>0?'-':'+';
+
+  document.getElementById('benefit').innerHTML=
+    '<div class="ben-row ben-gold">'+
+      '<div class="left"><div class="title2">'+goldLabel+'</div><div class="sub2">금값 '+fmt(goldVal)+'원 vs 내 현금 '+fmt(cash)+'원</div></div>'+
+      '<div class="right"><div class="amt gd">'+goldSign+fmt(Math.abs(diffGold))+'원</div></div>'+
+    '</div>'+
+    '<div class="ben-row ben-save">'+
+      '<div class="left"><div class="title2">시중 금은방 대비 절약</div><div class="sub2">시중 예상가 '+fmt(shopPrice)+'원 vs 내 현금</div></div>'+
+      '<div class="right"><div class="amt gn">-'+fmt(diffShop)+'원</div></div>'+
+    '</div>'+
+    '<div class="ben-row ben-pb">'+
+      '<div class="left"><div class="title2">페이백 10% 적립</div><div class="sub2">다음 이벤트에 사용 가능</div></div>'+
+      '<div class="right"><div class="amt bl">+'+fmt(pb)+'P</div></div>'+
+    '</div>';
+
+  var bottomMsg=diffGold>0
+    ?'금만 사도 <b>'+fmt(goldVal)+'원</b>인데<br>소잇에서는 <b>주얼리 완제품</b>을 현금 <b>'+fmt(cash)+'원</b>에!'
+    :'현금 <b>'+fmt(cash)+'원</b>에 주얼리 완제품을 가져가고<br>페이백 <b>'+fmt(pb)+'P</b>까지 돌려받으세요';
+
+  document.getElementById('compare').innerHTML=
+    '<div class="ch">실제 주얼리 가치 참고</div>'+
+    '<div class="crow"><span class="k">14K 금값 ('+w+'g)</span><span class="v">'+fmt(goldVal)+'원</span></div>'+
+    '<div class="crow"><span class="k">+ 공임 (디자인·제작)</span><span class="v">~'+fmt(LAB)+'원</span></div>'+
+    '<div class="crow"><span class="k">주얼리 원가</span><span class="v pk">'+fmt(jewelVal)+'원</span></div>'+
+    '<div class="crow"><span class="k">시중 금은방 예상가</span><span class="v">'+fmt(shopPrice)+'원~</span></div>'+
+    '<div class="highlight">'+bottomMsg+'</div>';
+}
+
+document.getElementById('gIn').addEventListener('input',calc);
+
+// 페이지 로드시 금시세 자동 조회
+fetchGoldPrice();
+</script>
+</body>
+</html>
