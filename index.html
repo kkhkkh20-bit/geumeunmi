@@ -9,17 +9,45 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Noto Sans KR',sans-serif;background:#f7f6f3;color:#1a1a1a;-webkit-font-smoothing:antialiased}
 
-.bar{background:#1c1510;padding:10px 16px;text-align:center}
+.bar{background:#1c1510;padding:10px 16px;text-align:center;position:relative}
 .bar .ev{font-size:.72em;color:#d4af37;font-weight:700;letter-spacing:.3px;margin-bottom:4px}
 .bar .prices{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}
 .bar .prices .p{text-align:center}
 .bar .prices .p .l{font-size:.52em;color:rgba(255,255,255,.35);font-weight:600;letter-spacing:.8px}
 .bar .prices .p .v{font-size:.85em;font-weight:800;color:rgba(255,255,255,.8);margin-top:1px}
 .bar .prices .p .v.gc{color:#d4af37}
-.bar .loading{font-size:.6em;color:rgba(255,255,255,.3);margin-top:4px}
+
+/* 톱니바퀴 */
+.gear-btn{position:absolute;top:8px;right:12px;background:none;border:none;color:rgba(255,255,255,.15);font-size:1.2em;cursor:pointer;padding:4px;transition:color .2s}
+.gear-btn:hover{color:rgba(255,255,255,.4)}
+
+/* 관리자 패널 */
+.admin-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:1000;justify-content:center;align-items:center}
+.admin-overlay.show{display:flex}
+.admin-panel{background:#fff;border-radius:16px;padding:24px;width:90%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.admin-panel h3{font-size:.9em;font-weight:700;margin-bottom:16px;color:#1a1a1a}
+.admin-panel .field{margin-bottom:14px}
+.admin-panel .field label{font-size:.72em;color:#888;display:block;margin-bottom:4px}
+.admin-panel .field input{width:100%;padding:10px 12px;border:2px solid #e0dbd3;border-radius:8px;font-size:1em;font-weight:700;font-family:'Noto Sans KR',sans-serif;outline:none}
+.admin-panel .field input:focus{border-color:#d4af37}
+.admin-panel .field .hint{font-size:.62em;color:#aaa;margin-top:3px}
+.admin-panel .field .hint a{color:#0a5e8a;text-decoration:underline}
+.admin-panel .btn-row{display:flex;gap:8px;margin-top:16px}
+.admin-panel .btn{flex:1;padding:10px;border:none;border-radius:8px;font-size:.82em;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif}
+.admin-panel .btn.save{background:#d4af37;color:#fff}
+.admin-panel .btn.save:hover{background:#b8941c}
+.admin-panel .btn.close{background:#f0ece6;color:#666}
+.admin-panel .btn.close:hover{background:#e0dbd3}
+.admin-panel .status{font-size:.7em;margin-top:10px;padding:8px;border-radius:6px;display:none}
+.admin-panel .status.ok{display:block;background:#e6f9ee;color:#0d9448}
+.admin-panel .status.err{display:block;background:#fde8e8;color:#c53030}
+.admin-panel .pw-gate{margin-bottom:16px}
+.admin-panel .pw-gate input{width:100%;padding:10px 12px;border:2px solid #e0dbd3;border-radius:8px;font-size:.9em;font-family:'Noto Sans KR',sans-serif;outline:none}
+.admin-panel .pw-gate .unlock{margin-top:8px;width:100%;padding:10px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:.82em;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif}
+.admin-fields{display:none}
+.admin-fields.unlocked{display:block}
 
 .wrap{max-width:440px;margin:0 auto;padding:16px 14px 32px}
-
 .input-box{background:#fff;border-radius:14px;padding:18px;text-align:center;box-shadow:0 1px 8px rgba(0,0,0,.04);margin-bottom:14px}
 .input-box .title{font-size:.85em;font-weight:700;margin-bottom:10px}
 .input-row{display:inline-flex;align-items:center;gap:6px}
@@ -74,11 +102,40 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f7f6f3;color:#1a1a1a;-web
 <div class="bar">
 <div class="ev">매달 마지막주 한정 · 금은미 이벤트</div>
 <div class="prices">
-<div class="p"><div class="l">24K 1돈</div><div class="v gc" id="t1">불러오는 중...</div></div>
+<div class="p"><div class="l">24K 1돈 살때</div><div class="v gc" id="t1">불러오는 중...</div></div>
 <div class="p"><div class="l">14K 1g</div><div class="v" id="t2">-</div></div>
-<div class="p"><div class="l">기준</div><div class="v" id="t3">-</div></div>
+<div class="p"><div class="l">기준일</div><div class="v" id="t3">-</div></div>
 </div>
-<div class="loading" id="apiStatus">금시세 자동 조회 중...</div>
+<button class="gear-btn" id="gearBtn" title="관리자">⚙️</button>
+</div>
+
+<!-- 관리자 패널 -->
+<div class="admin-overlay" id="adminOverlay">
+<div class="admin-panel">
+<h3>⚙️ 금시세 관리</h3>
+<div class="pw-gate" id="pwGate">
+<input type="password" id="pwInput" placeholder="관리자 비밀번호">
+<button class="unlock" id="pwBtn">확인</button>
+</div>
+<div class="admin-fields" id="adminFields">
+<div class="field">
+<label>24K 순금 1돈 살때 (VAT포함)</label>
+<input type="number" id="adminDon" placeholder="예: 1063000">
+<div class="hint">
+<a href="https://www.koreagoldx.co.kr/" target="_blank">한국금거래소 →</a> 메인 시세표에서 순금 살때 가격 확인
+</div>
+</div>
+<div class="field">
+<label>기준일 (선택)</label>
+<input type="date" id="adminDate">
+</div>
+<div class="btn-row">
+<button class="btn close" id="adminClose">닫기</button>
+<button class="btn save" id="adminSave">저장 · 즉시 반영</button>
+</div>
+<div class="status" id="adminStatus"></div>
+</div>
+</div>
 </div>
 
 <div class="wrap">
@@ -89,147 +146,218 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f7f6f3;color:#1a1a1a;-web
 <span>g</span>
 </div>
 </div>
-
 <div class="steps" id="steps"></div>
 <div class="benefit" id="benefit"></div>
 <div class="compare-box" id="compare"></div>
-
 <div class="foot">
 모든 가격 부가세(VAT) 포함<br>
-14K 시세 = 24K 국제시세 기준 × 순도 0.585 × 해리 1.1 × 환율 반영<br>
+14K 시세 = 24K 살때 기준 × 순도 0.585 × 해리 1.1<br>
 페이백 10% 자동적용 · 포인트는 소잇 내 사용 가능
 </div>
 </div>
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
 <script>
+// ===== Firebase 설정 =====
+// ★★★ 아래 firebaseConfig를 본인의 Firebase 프로젝트로 교체하세요 ★★★
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "YOUR_APP_ID"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ===== 상수 =====
 const H=0.585*1.1, ALP=0.8493, LAB=20876, MP=1.9, PBR=0.10;
-let don=1040000; // 기본값 (API 실패시 폴백)
-let priceDate='';
-const fmt=n=>Math.round(n).toLocaleString('ko-KR');
+const ADMIN_PW = 'soit2026'; // 관리자 비밀번호 (변경하세요)
+let don = 1063000; // 기본값
+let priceDate = '';
+const fmt = n => Math.round(n).toLocaleString('ko-KR');
 
-// URL 파라미터
-const params=new URLSearchParams(location.search);
-if(params.get('g')) document.getElementById('gIn').value=params.get('g');
-if(params.get('don')) don=parseInt(params.get('don'));
+// URL 파라미터 (폴백용)
+const params = new URLSearchParams(location.search);
+if(params.get('g')) document.getElementById('gIn').value = params.get('g');
+if(params.get('don')) don = parseInt(params.get('don'));
+if(params.get('date')) priceDate = params.get('date');
 
-// 금시세 API 조회 — 다중 소스 시도
-async function fetchGoldPrice(){
-  // 소스 1: 공공데이터 KRX 금 시세 (한국거래소)
-  // 소스 2: 국제 금시세 + 환율 계산
-  // 소스 3: 폴백 (수동 설정값)
-
+// ===== Firestore에서 금시세 불러오기 =====
+async function loadPrice() {
   try {
-    // 방법: 국제 금시세(USD/oz) → 원화 환산 → 1돈 가격
-    // GoldAPI.io 무료 (월100회) 또는 metals-api 사용
-    // 여기서는 CORS 지원되는 무료 소스 사용
-
-    // 1차 시도: freegoldapi.com (무료, CORS 지원, API키 불필요)
-    const res = await fetch('https://freegoldapi.com/data/latest.json');
-    if(res.ok){
-      const data = await res.json();
-      // 가장 최근 데이터 (배열 마지막)
-      const latest = data[data.length-1];
-      const goldUsdOz = latest.price; // USD per troy ounce
-
-      // 환율 조회
-      const fxRes = await fetch('https://open.er-api.com/v6/latest/USD');
-      if(fxRes.ok){
-        const fxData = await fxRes.json();
-        const usdKrw = fxData.rates.KRW;
-
-        // 24K 1돈 = (USD/oz) × 환율 × (3.75/31.1035) × 1.1(VAT+프리미엄)
-        // 한국 소매 살때 기준은 국제시세 대비 약 10-15% 프리미엄
-        const goldKrwG = (goldUsdOz / 31.1035) * usdKrw; // 24K 원/g (세전)
-        const goldKrwDon = goldKrwG * 3.75; // 24K 1돈 세전
-        // 한국 소매 살때 = 세전 + VAT(10%) + 마진(~3-5%)
-        don = Math.round(goldKrwDon * 1.13); // 약 13% 프리미엄 (VAT+유통)
-
-        priceDate = latest.date;
-        document.getElementById('apiStatus').textContent =
-          '국제시세 $'+goldUsdOz.toFixed(0)+'/oz × '+usdKrw.toFixed(0)+'원 기준';
-        calc();
-        return;
-      }
+    const doc = await db.collection('settings').doc('goldPrice').get();
+    if(doc.exists) {
+      const data = doc.data();
+      if(data.don) don = data.don;
+      if(data.date) priceDate = data.date;
+      calc();
     }
   } catch(e) {
-    console.log('API 1차 실패:', e);
+    console.log('Firestore 조회 실패, 기본값 사용:', e);
   }
-
-  // 폴백: URL 파라미터 또는 기본값 사용
-  document.getElementById('apiStatus').textContent =
-    '자동 시세 조회 실패 · ?don=금액 으로 수동 설정 가능';
   calc();
 }
 
-function calc(){
-  var w=parseFloat(document.getElementById('gIn').value)||1.0;
-  var g24=don/3.75, g14=g24*H;
-  var d=new Date();
-
-  document.getElementById('t1').textContent=fmt(don)+'원';
-  document.getElementById('t2').textContent=fmt(g14)+'원';
-  document.getElementById('t3').textContent= priceDate ||
-    (d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0'));
-
-  var goldVal=g14*w;
-  var jewelVal=goldVal+LAB;
-  var supply=(g14*w+LAB)*ALP;
-  var sp=supply*MP;
-  var cash=sp*0.5;
-  var pt=sp*0.5;
-  var pb=sp*PBR;
-  var diffGold=goldVal-cash;
-  var shopPrice=jewelVal*2;
-  var diffShop=shopPrice-cash;
-
-  document.getElementById('steps').innerHTML=
-    '<div class="step">'+
-      '<div class="left"><span class="num n1">1</span><div class="label">소잇 판매가</div><div class="desc">금은미 이벤트가</div></div>'+
-      '<div class="right"><div class="price dark">'+fmt(sp)+'원</div></div>'+
-    '</div>'+
-    '<div class="step">'+
-      '<div class="left"><span class="num n2">2</span><div class="label">14K '+w+'g 금 소매가</div><div class="desc">한국금거래소 기준 순수 금값</div></div>'+
-      '<div class="right"><div class="price gold">'+fmt(goldVal)+'원</div></div>'+
-    '</div>'+
-    '<div class="step" style="background:#f0fdf4">'+
-      '<div class="left"><span class="num n3">3</span><div class="label">포인트 50% 적용 후 현금</div><div class="desc">내가 실제로 내는 돈</div></div>'+
-      '<div class="right"><div class="price blue">'+fmt(cash)+'원</div></div>'+
-    '</div>';
-
-  var goldLabel=diffGold>0?'금값보다 저렴':'금값과의 차이';
-  var goldSign=diffGold>0?'-':'+';
-
-  document.getElementById('benefit').innerHTML=
-    '<div class="ben-row ben-gold">'+
-      '<div class="left"><div class="title2">'+goldLabel+'</div><div class="sub2">금값 '+fmt(goldVal)+'원 vs 내 현금 '+fmt(cash)+'원</div></div>'+
-      '<div class="right"><div class="amt gd">'+goldSign+fmt(Math.abs(diffGold))+'원</div></div>'+
-    '</div>'+
-    '<div class="ben-row ben-save">'+
-      '<div class="left"><div class="title2">시중 금은방 대비 절약</div><div class="sub2">시중 예상가 '+fmt(shopPrice)+'원 vs 내 현금</div></div>'+
-      '<div class="right"><div class="amt gn">-'+fmt(diffShop)+'원</div></div>'+
-    '</div>'+
-    '<div class="ben-row ben-pb">'+
-      '<div class="left"><div class="title2">페이백 10% 적립</div><div class="sub2">다음 이벤트에 사용 가능</div></div>'+
-      '<div class="right"><div class="amt bl">+'+fmt(pb)+'P</div></div>'+
-    '</div>';
-
-  var bottomMsg=diffGold>0
-    ?'금만 사도 <b>'+fmt(goldVal)+'원</b>인데<br>소잇에서는 <b>주얼리 완제품</b>을 현금 <b>'+fmt(cash)+'원</b>에!'
-    :'현금 <b>'+fmt(cash)+'원</b>에 주얼리 완제품을 가져가고<br>페이백 <b>'+fmt(pb)+'P</b>까지 돌려받으세요';
-
-  document.getElementById('compare').innerHTML=
-    '<div class="ch">실제 주얼리 가치 참고</div>'+
-    '<div class="crow"><span class="k">14K 금값 ('+w+'g)</span><span class="v">'+fmt(goldVal)+'원</span></div>'+
-    '<div class="crow"><span class="k">+ 공임 (디자인·제작)</span><span class="v">~'+fmt(LAB)+'원</span></div>'+
-    '<div class="crow"><span class="k">주얼리 원가</span><span class="v pk">'+fmt(jewelVal)+'원</span></div>'+
-    '<div class="crow"><span class="k">시중 금은방 예상가</span><span class="v">'+fmt(shopPrice)+'원~</span></div>'+
-    '<div class="highlight">'+bottomMsg+'</div>';
+// ===== 관리자: Firestore에 금시세 저장 =====
+async function savePrice(newDon, newDate) {
+  try {
+    await db.collection('settings').doc('goldPrice').set({
+      don: newDon,
+      date: newDate,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    don = newDon;
+    priceDate = newDate;
+    calc();
+    return true;
+  } catch(e) {
+    console.error('저장 실패:', e);
+    return false;
+  }
 }
 
-document.getElementById('gIn').addEventListener('input',calc);
+// ===== 계산 + 화면 렌더링 =====
+function calc(){
+  var w = parseFloat(document.getElementById('gIn').value) || 1.0;
+  var g24 = don / 3.75, g14 = g24 * H;
 
-// 페이지 로드시 금시세 자동 조회
-fetchGoldPrice();
+  document.getElementById('t1').textContent = fmt(don) + '원';
+  document.getElementById('t2').textContent = fmt(g14) + '원';
+  document.getElementById('t3').textContent = priceDate || '-';
+
+  var goldVal = g14 * w;
+  var jewelVal = goldVal + LAB;
+  var supply = (g14 * w + LAB) * ALP;
+  var sp = supply * MP;
+  var cash = sp * 0.5;
+  var pb = sp * PBR;
+  var diffGold = goldVal - cash;
+  var shopPrice = jewelVal * 2;
+  var diffShop = shopPrice - cash;
+
+  document.getElementById('steps').innerHTML =
+    '<div class="step">' +
+      '<div class="left"><span class="num n1">1</span><div class="label">소잇 판매가</div><div class="desc">금은미 이벤트가</div></div>' +
+      '<div class="right"><div class="price dark">' + fmt(sp) + '원</div></div>' +
+    '</div>' +
+    '<div class="step">' +
+      '<div class="left"><span class="num n2">2</span><div class="label">14K ' + w + 'g 금 소매가</div><div class="desc">한국금거래소 기준 순수 금값</div></div>' +
+      '<div class="right"><div class="price gold">' + fmt(goldVal) + '원</div></div>' +
+    '</div>' +
+    '<div class="step" style="background:#f0fdf4">' +
+      '<div class="left"><span class="num n3">3</span><div class="label">포인트 50% 적용 후 현금</div><div class="desc">내가 실제로 내는 돈</div></div>' +
+      '<div class="right"><div class="price blue">' + fmt(cash) + '원</div></div>' +
+    '</div>';
+
+  var goldLabel = diffGold > 0 ? '금값보다 저렴' : '금값과의 차이';
+  var goldSign = diffGold > 0 ? '-' : '+';
+
+  document.getElementById('benefit').innerHTML =
+    '<div class="ben-row ben-gold">' +
+      '<div class="left"><div class="title2">' + goldLabel + '</div><div class="sub2">금값 ' + fmt(goldVal) + '원 vs 내 현금 ' + fmt(cash) + '원</div></div>' +
+      '<div class="right"><div class="amt gd">' + goldSign + fmt(Math.abs(diffGold)) + '원</div></div>' +
+    '</div>' +
+    '<div class="ben-row ben-save">' +
+      '<div class="left"><div class="title2">시중 금은방 대비 절약</div><div class="sub2">시중 예상가 ' + fmt(shopPrice) + '원 vs 내 현금</div></div>' +
+      '<div class="right"><div class="amt gn">-' + fmt(diffShop) + '원</div></div>' +
+    '</div>' +
+    '<div class="ben-row ben-pb">' +
+      '<div class="left"><div class="title2">페이백 10% 적립</div><div class="sub2">다음 이벤트에 사용 가능</div></div>' +
+      '<div class="right"><div class="amt bl">+' + fmt(pb) + 'P</div></div>' +
+    '</div>';
+
+  var bottomMsg = diffGold > 0
+    ? '금만 사도 <b>' + fmt(goldVal) + '원</b>인데<br>소잇에서는 <b>주얼리 완제품</b>을 현금 <b>' + fmt(cash) + '원</b>에!'
+    : '현금 <b>' + fmt(cash) + '원</b>에 주얼리 완제품을 가져가고<br>페이백 <b>' + fmt(pb) + 'P</b>까지 돌려받으세요';
+
+  document.getElementById('compare').innerHTML =
+    '<div class="ch">실제 주얼리 가치 참고</div>' +
+    '<div class="crow"><span class="k">14K 금값 (' + w + 'g)</span><span class="v">' + fmt(goldVal) + '원</span></div>' +
+    '<div class="crow"><span class="k">+ 공임 (디자인·제작)</span><span class="v">~' + fmt(LAB) + '원</span></div>' +
+    '<div class="crow"><span class="k">주얼리 원가</span><span class="v pk">' + fmt(jewelVal) + '원</span></div>' +
+    '<div class="crow"><span class="k">시중 금은방 예상가</span><span class="v">' + fmt(shopPrice) + '원~</span></div>' +
+    '<div class="highlight">' + bottomMsg + '</div>';
+}
+
+// ===== 관리자 UI 이벤트 =====
+var gearBtn = document.getElementById('gearBtn');
+var overlay = document.getElementById('adminOverlay');
+var pwGate = document.getElementById('pwGate');
+var pwInput = document.getElementById('pwInput');
+var pwBtn = document.getElementById('pwBtn');
+var adminFields = document.getElementById('adminFields');
+var adminClose = document.getElementById('adminClose');
+var adminSave = document.getElementById('adminSave');
+var adminStatus = document.getElementById('adminStatus');
+
+gearBtn.addEventListener('click', function(){
+  overlay.classList.add('show');
+  pwGate.style.display = 'block';
+  adminFields.classList.remove('unlocked');
+  pwInput.value = '';
+  adminStatus.className = 'status';
+  pwInput.focus();
+});
+
+overlay.addEventListener('click', function(e){
+  if(e.target === overlay) {
+    overlay.classList.remove('show');
+  }
+});
+
+pwBtn.addEventListener('click', function(){
+  if(pwInput.value === ADMIN_PW) {
+    pwGate.style.display = 'none';
+    adminFields.classList.add('unlocked');
+    document.getElementById('adminDon').value = don;
+    document.getElementById('adminDate').value = priceDate || new Date().toISOString().slice(0,10);
+  } else {
+    pwInput.value = '';
+    pwInput.placeholder = '비밀번호가 틀립니다';
+  }
+});
+
+pwInput.addEventListener('keydown', function(e){
+  if(e.key === 'Enter') pwBtn.click();
+});
+
+adminClose.addEventListener('click', function(){
+  overlay.classList.remove('show');
+});
+
+adminSave.addEventListener('click', async function(){
+  var newDon = parseInt(document.getElementById('adminDon').value);
+  var newDate = document.getElementById('adminDate').value;
+  if(!newDon || newDon < 100000) {
+    adminStatus.className = 'status err';
+    adminStatus.textContent = '금액을 정확히 입력해주세요';
+    return;
+  }
+  adminSave.textContent = '저장 중...';
+  var ok = await savePrice(newDon, newDate);
+  if(ok) {
+    adminStatus.className = 'status ok';
+    adminStatus.textContent = '저장 완료! 24K 1돈 ' + fmt(newDon) + '원 (' + newDate + ') 반영됨';
+    adminSave.textContent = '저장 · 즉시 반영';
+    setTimeout(function(){ overlay.classList.remove('show'); }, 1500);
+  } else {
+    adminStatus.className = 'status err';
+    adminStatus.textContent = '저장 실패. Firebase 설정을 확인하세요.';
+    adminSave.textContent = '저장 · 즉시 반영';
+  }
+});
+
+// ===== 무게 입력 이벤트 =====
+document.getElementById('gIn').addEventListener('input', calc);
+
+// ===== 시작 =====
+loadPrice();
 </script>
 </body>
 </html>
